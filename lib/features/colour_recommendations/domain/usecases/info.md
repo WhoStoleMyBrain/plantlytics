@@ -1,0 +1,1 @@
+Here live domain features, so usecases. Usecases wrap logic from repositories and make the collected information (collected by logic) available to view models
