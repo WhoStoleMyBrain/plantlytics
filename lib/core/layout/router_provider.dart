@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:plantlytics/core/layout/main_shell.dart';
+import 'package:plantlytics/features/food_log/presentation/providers/logged_foods_provider.dart';
 import 'package:plantlytics/features/food_log/presentation/views/food_log_route.dart';
 
 /// Global [GoRouter] provider that wires up the three demo routes.
@@ -46,16 +47,24 @@ class DiscoverRoute extends StatelessWidget {
 }
 
 /// Placeholder screen for the Settings feature.
-class SettingsRoute extends StatelessWidget {
+class SettingsRoute extends ConsumerWidget {
   static const String name = 'settings';
 
   const SettingsRoute({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings Screen')),
+      body: Column(
+        children: [
+          const Center(child: Text('Settings Screen')),
+          ElevatedButton(
+            onPressed: ref.read(foodLogRepoProvider).clear,
+            child: Text("Delete all data?"),
+          ),
+        ],
+      ),
     );
   }
 }

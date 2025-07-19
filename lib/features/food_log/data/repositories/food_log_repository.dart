@@ -4,4 +4,5 @@ abstract class FoodLogRepository {
   Stream<List<LoggedFood>> watchAll();
   Future<void> insert(LoggedFood entry);
   Future<void> delete(LoggedFood entry);
+  Future<void> clear();
 }

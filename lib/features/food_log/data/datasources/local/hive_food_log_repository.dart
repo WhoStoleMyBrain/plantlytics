@@ -15,4 +15,7 @@ class HiveFoodLogRepository extends FoodLogRepository {
   @override
   Stream<List<LoggedFood>> watchAll() =>
       _box.watch().map((_) => _box.values.toList(growable: false));
+
+  @override
+  Future<void> clear() => _box.clear();
 }

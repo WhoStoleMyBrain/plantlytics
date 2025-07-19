@@ -15,104 +15,96 @@ class FoodLogRoute extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loggedFoods = ref.watch(loggedFoodsProvider);
-    // final loggedColors = ref.watch(t);
     final trailingColors = ref.watch(trailingColorsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Food Log')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Autocomplete<Food>(
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                if (textEditingValue.text.isEmpty) {
-                  return const Iterable<Food>.empty();
-                }
-                return kFoodOptions.where(
-                  (food) => food.name.toLowerCase().contains(
-                    textEditingValue.text.toLowerCase(),
-                  ),
-                );
-              },
-              displayStringForOption: (Food option) => option.name,
-              onSelected: (Food selection) {
-                ref
-                    .read(foodLogRepoProvider)
-                    .insert(LoggedFood(selection, DateTime.now()));
-                // ref.read(loggedFoodsProvider.notifier).addFood(selection);
-              },
-              fieldViewBuilder:
-                  (context, controller, focusNode, onEditingComplete) =>
-                      TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: const InputDecoration(
-                          labelText: 'Search & add food',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Autocomplete<Food>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return const Iterable<Food>.empty();
+                  }
+                  return kFoodOptions.where(
+                    (food) => food.name.toLowerCase().contains(
+                      textEditingValue.text.toLowerCase(),
+                    ),
+                  );
+                },
+                displayStringForOption: (Food option) => option.name,
+                onSelected: (Food selection) {
+                  ref
+                      .read(foodLogRepoProvider)
+                      .insert(LoggedFood(selection, DateTime.now()));
+                },
+                fieldViewBuilder:
+                    (context, controller, focusNode, onEditingComplete) =>
+                        TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          onEditingComplete: onEditingComplete,
+                          decoration: const InputDecoration(
+                            labelText: 'Search & add food',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.search),
+                          ),
                         ),
-                      ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Colours logged: ${trailingColors.map((c) => c.name).join(', ')}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 8),
-            AspectRatio(
-              aspectRatio: 1,
-              child: PieChart(
-                PieChartData(
-                  sections: FoodColor.values.map((c) {
-                    final has = trailingColors.contains(c);
-                    return PieChartSectionData(
-                      value: has ? 1 : 0.001, // keeps slice visible
-                      color: colorToMaterial(
-                        c,
-                      ).withValues(alpha: has ? 1 : .15),
-                      title: '', // legend via chips
-                    );
-                  }).toList(),
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 40,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Colours logged: ${trailingColors.map((c) => c.name).join(', ')}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 2,
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: PieChart(
+                    PieChartData(
+                      sections: FoodColor.values.map((c) {
+                        final has = trailingColors.contains(c);
+                        return PieChartSectionData(
+                          value: has ? 1 : 0.001, // keeps slice visible
+                          color: colorToMaterial(
+                            c,
+                          ).withValues(alpha: has ? 1 : .15),
+                          title: '', // legend via chips
+                        );
+                      }).toList(),
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 40,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            ref
-                .watch(suggestionProvider)
-                .when(
-                  data: (food) => food == null
-                      ? const Text('Rainbow complete! 🎉')
-                      : ActionChip(
-                          label: Text('Try ${food.name}'),
-                          onPressed: () => ref
-                              .read(foodLogRepoProvider)
-                              .insert(LoggedFood(food, DateTime.now())),
-                        ),
-                  loading: () => const CircularProgressIndicator(),
-                  error: (_, __) => const SizedBox.shrink(),
-                ),
-            // Wrap(
-            //   spacing: 8,
-            //   children: loggedColors
-            //       .map(
-            //         (c) => Chip(
-            //           label: Text(c.name),
-            //           backgroundColor: colorToMaterial(c),
-            //         ),
-            //       )
-            //       .toList(),
-            // ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Card(
+              ref
+                  .watch(suggestionProvider)
+                  .when(
+                    data: (food) => food == null
+                        ? const Text('Rainbow complete! 🎉')
+                        : ActionChip(
+                            label: Text('Try ${food.name}'),
+                            onPressed: () => ref
+                                .read(foodLogRepoProvider)
+                                .insert(LoggedFood(food, DateTime.now())),
+                          ),
+                    loading: () => const CircularProgressIndicator(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+              const SizedBox(height: 16),
+              Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListView.separated(
+                  shrinkWrap: true,
                   padding: const EdgeInsets.all(8),
                   itemCount: loggedFoods.value?.length ?? 0,
                   separatorBuilder: (_, __) => const Divider(height: 1),
@@ -128,8 +120,8 @@ class FoodLogRoute extends ConsumerWidget {
                   },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
